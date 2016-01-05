@@ -13,6 +13,8 @@ CMakeLists.txt.user*
 !CMakeExternals/*.patch
 
 ########## IDE specific
+# CLion
+.idea/
 
 ## Office
 ~$*
