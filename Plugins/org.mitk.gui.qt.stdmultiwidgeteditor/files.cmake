@@ -24,6 +24,7 @@ set(CACHED_RESOURCE_FILES
 )
 
 set(QRC_FILES
+  resources/stdmultiwidgeteditor.qrc
 )
 
 set(CPP_FILES )

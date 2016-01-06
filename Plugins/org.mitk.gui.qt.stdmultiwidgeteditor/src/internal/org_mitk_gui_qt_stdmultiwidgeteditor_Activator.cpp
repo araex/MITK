@@ -18,6 +18,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "../QmitkStdMultiWidgetEditor.h"
 #include "QmitkStdMultiWidgetEditorPreferencePage.h"
+#include <mitkWorkbenchUtil.h>
 
 ctkPluginContext* org_mitk_gui_qt_stdmultiwidgeteditor_Activator::m_Context = nullptr;
 
@@ -28,6 +29,7 @@ org_mitk_gui_qt_stdmultiwidgeteditor_Activator::start(ctkPluginContext* context)
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkStdMultiWidgetEditor, context)
   BERRY_REGISTER_EXTENSION_CLASS(QmitkStdMultiWidgetEditorPreferencePage, context)
+  mitk::WorkbenchUtil::SetDepartmentLogoPreference(":/stdmultiwidgeteditor/overlay.png", m_Context);
 }
 
 void
