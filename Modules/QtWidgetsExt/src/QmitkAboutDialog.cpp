@@ -62,10 +62,10 @@ QString QmitkAboutDialog::GetAboutText() const
   return m_GUI.m_AboutLabel->text();
 }
 
-QString QmitkAboutDialog::GetCaptionText() const
-{
-  return m_GUI.m_CaptionLabel->text();
-}
+//QString QmitkAboutDialog::GetCaptionText() const
+//{
+//  return m_GUI.m_CaptionLabel->text();
+//}
 
 QString QmitkAboutDialog::GetRevisionText() const
 {
@@ -77,10 +77,10 @@ void QmitkAboutDialog::SetAboutText(const QString &text)
   m_GUI.m_AboutLabel->setText(text);
 }
 
-void QmitkAboutDialog::SetCaptionText(const QString &text)
-{
-  m_GUI.m_CaptionLabel->setText(text);
-}
+//void QmitkAboutDialog::SetCaptionText(const QString &text)
+//{
+//  m_GUI.m_CaptionLabel->setText(text);
+//}
 
 void QmitkAboutDialog::SetRevisionText(const QString &text)
 {
