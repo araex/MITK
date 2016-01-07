@@ -16,6 +16,14 @@ usage scenarios:
 
 See the [MITK homepage][mitk] for details.
 
+About this fork
+--------------------
+MITK distribution for the [MITK-GEM](https://github.com/araex/mitk-gem) project. Changes include:
+
+ - More strict unstructured grid file IO.
+ - Customized about dialog.
+ - Department logo for the StdMultiWidget.
+
 Supported Platforms
 -----------------------------
 
