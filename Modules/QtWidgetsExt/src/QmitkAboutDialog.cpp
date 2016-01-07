@@ -32,7 +32,7 @@ QmitkAboutDialog::QmitkAboutDialog(QWidget* parent, Qt::WindowFlags f)
   QString itkVersion = QString("%1.%2.%3").arg(ITK_VERSION_MAJOR).arg(ITK_VERSION_MINOR).arg(ITK_VERSION_PATCH);
   QString vtkVersion = QString("%1.%2.%3").arg(VTK_MAJOR_VERSION).arg(VTK_MINOR_VERSION).arg(VTK_BUILD_VERSION);
 
-  QString revisionText = QString("Revision: %1").arg(MITK_REVISION);
+  QString revisionText = QString("MITK Revision: %1").arg(MITK_REVISION);
 
   if (!QString(MITK_REVISION_DESC).isEmpty())
     revisionText += QString("\nDescription: %1").arg(MITK_REVISION_DESC);
