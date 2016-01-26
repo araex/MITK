@@ -335,7 +335,21 @@ void QmitkSegmentationView::CreateNewSegmentation()
                   this->OnSelectionChanged( emptySegmentation );
 
                   m_Controls->segImageSelector->SetSelectedNode(emptySegmentation);
+
+                  // save slice state
+                  auto getSnc = [](std::string _windowName){
+                      return mitk::BaseRenderer::GetInstance(mitk::BaseRenderer::GetRenderWindowByName(_windowName))->GetSliceNavigationController();
+                  };
+                  auto idxAx = getSnc("stdmulti.widget1")->GetSlice()->GetPos();
+                  auto idxSg = getSnc("stdmulti.widget2")->GetSlice()->GetPos();
+                  auto idxCr = getSnc("stdmulti.widget3")->GetSlice()->GetPos();
+
                   mitk::RenderingManager::GetInstance()->InitializeViews(emptySegmentation->GetData()->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true );
+
+                  // restore slice state
+                  getSnc("stdmulti.widget1")->GetSlice()->SetPos(idxAx);
+                  getSnc("stdmulti.widget2")->GetSlice()->SetPos(idxSg);
+                  getSnc("stdmulti.widget3")->GetSlice()->SetPos(idxCr);
                }
                catch (std::bad_alloc)
                {
