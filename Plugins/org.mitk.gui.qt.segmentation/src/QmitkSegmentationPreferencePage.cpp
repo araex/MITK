@@ -62,7 +62,7 @@ void QmitkSegmentationPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("Slim view", m_SlimViewCheckBox);
 
   auto   displayOptionsLayout = new QVBoxLayout;
-  m_RadioOutline = new QRadioButton( "Draw as outline", m_MainControl);
+  m_RadioOutline = new QRadioButton( "Draw as outline. Only works with 8 bit images.", m_MainControl);
   displayOptionsLayout->addWidget( m_RadioOutline );
   m_RadioOverlay = new QRadioButton( "Draw as transparent overlay", m_MainControl);
   displayOptionsLayout->addWidget( m_RadioOverlay );
@@ -142,7 +142,7 @@ void QmitkSegmentationPreferencePage::Update()
 
   m_SlimViewCheckBox->setChecked(m_SegmentationPreferencesNode->GetBool("slim view", false));
 
-  if (m_SegmentationPreferencesNode->GetBool("draw outline", true) )
+  if (m_SegmentationPreferencesNode->GetBool("draw outline", false) )
   {
     m_RadioOutline->setChecked( true );
   }

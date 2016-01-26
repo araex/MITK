@@ -1040,9 +1040,9 @@ void QmitkSegmentationView::ApplyDisplayOptions(mitk::DataNode* node)
 
    if (isBinary)
    {
-      node->SetProperty( "outline binary", mitk::BoolProperty::New( this->GetPreferences()->GetBool("draw outline", true)) );
+      node->SetProperty( "outline binary", mitk::BoolProperty::New( this->GetPreferences()->GetBool("draw outline", false)) );
       node->SetProperty( "outline width", mitk::FloatProperty::New( 2.0 ) );
-      node->SetProperty( "opacity", mitk::FloatProperty::New( this->GetPreferences()->GetBool("draw outline", true) ? 1.0 : 0.3 ) );
+      node->SetProperty( "opacity", mitk::FloatProperty::New( this->GetPreferences()->GetBool("draw outline", false) ? 1.0 : 0.4 ) );
       node->SetProperty( "volumerendering", mitk::BoolProperty::New( this->GetPreferences()->GetBool("volume rendering", false) ) );
    }
 }
