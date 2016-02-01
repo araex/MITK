@@ -17,6 +17,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "QmitkTransferFunctionWidget.h"
 
 #include <mitkTransferFunctionProperty.h>
+#include <mitkUnstructuredGrid.h>
 
 QmitkTransferFunctionWidget::QmitkTransferFunctionWidget(QWidget* parent,
                                                          Qt::WindowFlags f) :
@@ -120,8 +121,14 @@ void QmitkTransferFunctionWidget::SetDataNode(mitk::DataNode* node, const mitk::
     {
       mitk::SimpleHistogram *h = histogramCache[data];
 
-      m_RangeSliderMin= h->GetMin();
-      m_RangeSliderMax= h->GetMax();
+      if(dynamic_cast<mitk::UnstructuredGrid *>(node->GetData())){
+        m_RangeSliderMin = tf->GetMin();
+        m_RangeSliderMax = tf->GetMax();
+      }
+      else {
+        m_RangeSliderMin = h->GetMin();
+        m_RangeSliderMax = h->GetMax();
+      }
 
       m_RangeSlider->blockSignals(true);
       m_RangeSlider->setMinimum(m_RangeSliderMin);
