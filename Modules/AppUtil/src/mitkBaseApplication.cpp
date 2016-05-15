@@ -115,7 +115,7 @@ struct BaseApplication::Impl
     bool argFound (false);
     for (int i = 0; i < m_Argc; ++i)
     {
-      if (QString::fromAscii(m_Argv[i]).contains("-psn"))
+      if (QString::fromLatin1(m_Argv[i]).contains("-psn"))
       {
         argFound = true;
       }
@@ -595,11 +595,7 @@ QString BaseApplication::getCTKFrameworkStorageDir() const
 
     // Append a hash value of the absolute path of the executable to the data location.
     // This allows to start the same application from different build or install trees.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     storageDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/" + this->getOrganizationName() + "/" + this->getApplicationName() + '_';
-#else
-    storageDir = QDesktopServices::storageLocation(QDesktopServices::DataLocation) + '_';
-#endif
     storageDir += QString::number(qHash(QCoreApplication::applicationDirPath())) + "/";
   }
   return storageDir;
@@ -620,6 +616,12 @@ void BaseApplication::initializeCppMicroServices()
 QCoreApplication* BaseApplication::getQApplication() const
 {
   QCoreApplication* qCoreApp = qApp;
+
+  // Needed to fix bug #18521, i.e. not responding GUI on Mac OS X with Qt5
+#ifdef Q_OS_OSX
+  qCoreApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+#endif
+
   if (!qCoreApp)
   {
     if (getSingleMode())
@@ -670,11 +672,18 @@ void BaseApplication::initializeLibraryPaths()
   }
 }
 
-int BaseApplication::main(const std::vector<std::string>& /*args*/)
+int BaseApplication::main(const std::vector<std::string>& args)
 {
   // Start the plugin framework and all installed plug-ins according with
   // their auto-start setting.
-  return ctkPluginFrameworkLauncher::run().toInt();
+  QStringList arguments;
+
+  for (auto const & arg : args)
+  {
+    arguments.push_back(QString::fromStdString(arg));
+  }
+
+  return ctkPluginFrameworkLauncher::run(NULL, QVariant::fromValue(arguments)).toInt();
 }
 
 void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
