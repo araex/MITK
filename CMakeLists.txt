@@ -273,6 +273,7 @@ mitkFunctionAddExternalProject(NAME Rasqal    OFF          DEPENDS Raptor2 PCRE 
 mitkFunctionAddExternalProject(NAME Redland   OFF          DEPENDS Rasqal DOC "Use the Redland RDF library")
 mitkFunctionAddExternalProject(NAME SOFA      OFF          DEPENDS GLUT Boost DOC "Use Simulation Open Framework Architecture")
 mitkFunctionAddExternalProject(NAME VMTK      OFF          DEPENDS ITK VTK)
+mitkFunctionAddExternalProject(NAME CGAL      ON           DEPENDS VTK Boost)
 
 if(MITK_USE_QT)
   mitkFunctionAddExternalProject(NAME Qwt     ON  ADVANCED DEPENDS QT)
@@ -336,6 +337,22 @@ if(MITK_USE_SOFA)
   # Allow setting external SOFA plugins directory and SOFA plugins
   set(MITK_USE_SOFA_PLUGINS_DIR ${MITK_USE_SOFA_PLUGINS_DIR} CACHE PATH "External SOFA plugins directory" FORCE)
   set(MITK_USE_SOFA_PLUGINS ${MITK_USE_SOFA_PLUGINS} CACHE PATH "List of semicolon-separated plugin names" FORCE)
+endif()
+
+if(MITK_USE_CGAL)
+  # CGAL requires boost system library
+  list(FIND MITK_USE_Boost_LIBRARIES system _result)
+  if(_result LESS 0)
+    message("> Adding 'system' to MITK_USE_Boost_LIBRARIES.")
+    list(APPEND MITK_USE_Boost_LIBRARIES system)
+  endif()
+  # CGAL requires boost thread library
+  list(FIND MITK_USE_Boost_LIBRARIES thread _result)
+  if(_result LESS 0)
+    message("> Adding 'thread' to MITK_USE_Boost_LIBRARIES.")
+    list(APPEND MITK_USE_Boost_LIBRARIES thread)
+  endif()
+  set(MITK_USE_Boost_LIBRARIES ${MITK_USE_Boost_LIBRARIES} CACHE STRING "" FORCE)
 endif()
 
 # sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
