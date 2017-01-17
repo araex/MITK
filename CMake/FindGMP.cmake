@@ -31,7 +31,7 @@ else()
             NAMES gmp.h
             HINTS ENV GMP_INC_DIR
                   ENV GMP_DIR
-                  "$ENV{CGAL_DIR2}/auxiliary/gmp/include"
+                  "$ENV{CGAL_DIR}/auxiliary/gmp/include"
             PATH_SUFFIXES include
   	        DOC "The directory containing the GMP header files"
            )

@@ -25,6 +25,17 @@ if(MITK_USE_CGAL)
   endif()
 
   if(NOT DEFINED CGAL_DIR)
+  
+	set(additional_cmake_args)
+    
+    list(APPEND additional_cmake_args
+	  -DGMP_LIBRARIES_DIR:PATH=${GMP_LIBRARIES_DIR}
+      -DGMP_LIBRARIES:PATH=${GMP_LIBRARIES}
+      -DGMP_INCLUDE_DIR:PATH=${GMP_INCLUDE_DIR}
+	  -DMPFR_LIBRARIES_DIR:PATH=${MPFR_LIBRARIES_DIR}
+      -DMPFR_LIBRARIES:PATH=${MPFR_LIBRARIES}
+      -DMPFR_INCLUDE_DIR:PATH=${MPFR_INCLUDE_DIR}
+    )
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
@@ -37,6 +48,7 @@ if(MITK_USE_CGAL)
       CMAKE_ARGS
         ${ep_common_args}
         ${preconfigure_cmake_args}
+		${additional_cmake_args}
 
       CMAKE_CACHE_ARGS
         ${ep_common_cache_args}
