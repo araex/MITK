@@ -25,19 +25,18 @@ if(MITK_USE_CGAL)
   endif()
 
   if(NOT DEFINED CGAL_DIR)
-    set(additional_cmake_args)
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
 
       URL "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.9/CGAL-4.9.tar.xz"
+	  URL_MD5 ee31343dbc4bf7b5b7501ec1650e9233
 
       CMAKE_GENERATOR ${gen}
 
       CMAKE_ARGS
         ${ep_common_args}
         ${preconfigure_cmake_args}
-        # -DBUILD_EXAMPLES:BOOL=OFF
 
       CMAKE_CACHE_ARGS
         ${ep_common_cache_args}
