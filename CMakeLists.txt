@@ -340,13 +340,11 @@ if(MITK_USE_SOFA)
 endif()
 
 if(MITK_USE_CGAL)
-  if(WIN32)
-	find_package(GMP MODULE)
-	find_package(MPFR MODULE)
+    find_package(GMP MODULE) 
+    find_package(MPFR MODULE)
     if(NOT GMP_LIBRARIES OR NOT MPFR_LIBRARIES OR NOT GMP_INCLUDE_DIR OR NOT MPFR_INCLUDE_DIR)
-      message(FATAL_ERROR "Could not find GMP and MPFR. Those libraries cannot be built using the superbuild on Windows. Please install separatly and rerun CMake. We recommend using the using the CGAL installer to install the dependencies.")
+      message(FATAL_ERROR "Could not find GMP and MPFR. Please install separatly and rerun CMake. On Windows, we recommend using the the CGAL installer to install those dependencies.")
     endif()
-  endif()
   
   # CGAL requires boost system library
   list(FIND MITK_USE_Boost_LIBRARIES system _result)

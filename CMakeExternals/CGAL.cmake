@@ -25,14 +25,14 @@ if(MITK_USE_CGAL)
   endif()
 
   if(NOT DEFINED CGAL_DIR)
-  
-	set(additional_cmake_args)
+
+    set(additional_cmake_args)
     
     list(APPEND additional_cmake_args
-	  -DGMP_LIBRARIES_DIR:PATH=${GMP_LIBRARIES_DIR}
+      -DGMP_LIBRARIES_DIR:PATH=${GMP_LIBRARIES_DIR}
       -DGMP_LIBRARIES:PATH=${GMP_LIBRARIES}
       -DGMP_INCLUDE_DIR:PATH=${GMP_INCLUDE_DIR}
-	  -DMPFR_LIBRARIES_DIR:PATH=${MPFR_LIBRARIES_DIR}
+      -DMPFR_LIBRARIES_DIR:PATH=${MPFR_LIBRARIES_DIR}
       -DMPFR_LIBRARIES:PATH=${MPFR_LIBRARIES}
       -DMPFR_INCLUDE_DIR:PATH=${MPFR_INCLUDE_DIR}
     )
@@ -41,14 +41,14 @@ if(MITK_USE_CGAL)
       LIST_SEPARATOR ${sep}
 
       URL "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.9/CGAL-4.9.tar.xz"
-	  URL_MD5 ee31343dbc4bf7b5b7501ec1650e9233
+      URL_MD5 ee31343dbc4bf7b5b7501ec1650e9233
 
       CMAKE_GENERATOR ${gen}
 
       CMAKE_ARGS
         ${ep_common_args}
         ${preconfigure_cmake_args}
-		${additional_cmake_args}
+        ${additional_cmake_args}
 
       CMAKE_CACHE_ARGS
         ${ep_common_cache_args}
