@@ -9,7 +9,7 @@ set(mitk_modules
   RDF
   LegacyIO
   DataTypesExt
-  Overlays
+  Annotation
   LegacyGL
   AlgorithmsExt
   MapperExt
@@ -20,20 +20,21 @@ set(mitk_modules
   PlanarFigure
   ImageDenoising
   ImageExtraction
-  ImageStatistics
   LegacyAdaptors
   SceneSerialization
   Gizmo
   GraphAlgorithms
   Multilabel
+  ImageStatistics
   ContourModel
   SurfaceInterpolation
   Segmentation
   PlanarFigureSegmentation
   OpenViewCore
-  QmlItems
   QtWidgets
   QtWidgetsExt
+  C3js
+  QmlItems
   SegmentationUI
   DiffusionImaging
   GPGPU
@@ -70,6 +71,11 @@ set(mitk_modules
   BiophotonicsHardware
   Classification
   TumorInvasionAnalysis
+  MatchPointRegistration
+  MatchPointRegistrationUI
+  BoundingShape
+  RenderWindowManager
+  RenderWindowManagerUI
 )
 
 if(MITK_ENABLE_PIC_READER)

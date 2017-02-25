@@ -121,8 +121,8 @@ static void TestOutputsContainInputs(DICOMFileReader* reader)
 }
 
 static void TestMitkImagesAreLoaded( DICOMFileReader* reader,
-                                     const std::unordered_map<const char*, mitk::DICOMTag>& requestedTags,
-                                     const std::unordered_map<const char*, const char*>& expectedProperties )
+                                     const DICOMFileReader::AdditionalTagsMapType& requestedTags,
+                                     const std::unordered_map<std::string, std::string>& expectedProperties )
 {
   StringList inputFiles = GetInputFilenames();
   reader->SetInputFiles( inputFiles );
@@ -137,15 +137,22 @@ static void TestMitkImagesAreLoaded( DICOMFileReader* reader,
 
     const DICOMImageFrameList& outputFiles = block.GetImageFrameList();
     const mitk::Image::Pointer mitkImage = block.GetMitkImage();
-    auto iter2 = expectedProperties.cbegin();
 
-    for ( auto iter = requestedTags.cbegin(); iter != requestedTags.cend(); ++iter, ++iter2 )
+    for ( auto iter = requestedTags.cbegin(); iter != requestedTags.cend(); ++iter)
     {
-      mitk::BaseProperty* property = mitkImage->GetProperty( iter->first ).GetPointer();
+      mitk::BaseProperty* property = mitkImage->GetProperty( iter->second.c_str() ).GetPointer();
       MITK_TEST_CONDITION( property != nullptr,
                            "Requested Tag is available as Property in Image" );
+      if (property)
+      {
+        MITK_INFO << iter->first.ToStr() << " / " << property->GetNameOfClass();
+        auto expectfinding = expectedProperties.find(iter->second);
 
-      MITK_INFO << iter->first << " / " << property->GetNameOfClass();
+        if (expectfinding != expectedProperties.end())
+        {
+          MITK_TEST_CONDITION(std::string(property->GetNameOfClass()) == expectfinding->second, "Property type is as expected");
+        }
+      }
     }
 
 

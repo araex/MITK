@@ -35,6 +35,13 @@ DICOMFileReader::Pointer AutoSelectingDICOMReaderService::GetReader(const mitk::
   selector->SetInputFiles(relevantFiles);
 
   mitk::DICOMFileReader::Pointer reader = selector->GetFirstReaderWithMinimumNumberOfOutputImages();
+  if(reader.IsNotNull())
+  {
+      //reset tag cache to ensure that additional tags of interest
+      //will be regarded by the reader if set later on.
+      reader->SetTagCache(nullptr);
+  }
+
   return reader;
 };
 

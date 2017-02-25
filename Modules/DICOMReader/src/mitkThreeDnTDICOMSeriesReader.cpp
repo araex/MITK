@@ -100,14 +100,14 @@ mitk::ThreeDnTDICOMSeriesReader
   while (!remainingBlocks.empty())
   {
     // new block to fill up
-    const DICOMGDCMImageFrameList& firstBlock = remainingBlocks.front();
-    DICOMGDCMImageFrameList current3DnTBlock = firstBlock;
+    const DICOMDatasetAccessingImageFrameList& firstBlock = remainingBlocks.front();
+    DICOMDatasetAccessingImageFrameList current3DnTBlock = firstBlock;
     int current3DnTBlockNumberOfTimeSteps = 1;
 
     // get block characteristics of first block
     const unsigned int currentBlockNumberOfSlices = firstBlock.size();
-    const std::string currentBlockFirstOrigin = firstBlock.front()->GetTagValueAsString( tagImagePositionPatient );
-    const std::string currentBlockLastOrigin  =  firstBlock.back()->GetTagValueAsString( tagImagePositionPatient );
+    const std::string currentBlockFirstOrigin = firstBlock.front()->GetTagValueAsString( tagImagePositionPatient ).value;
+    const std::string currentBlockLastOrigin  =  firstBlock.back()->GetTagValueAsString( tagImagePositionPatient ).value;
 
     remainingBlocks.erase( remainingBlocks.begin() );
 
@@ -117,11 +117,11 @@ mitk::ThreeDnTDICOMSeriesReader
          /*++otherBlockIter*/) // <-- inside loop
     {
       // get block characteristics from first block
-      const DICOMGDCMImageFrameList otherBlock = *otherBlockIter;
+      const DICOMDatasetAccessingImageFrameList otherBlock = *otherBlockIter;
 
       const unsigned int otherBlockNumberOfSlices = otherBlock.size();
-      const std::string otherBlockFirstOrigin = otherBlock.front()->GetTagValueAsString( tagImagePositionPatient );
-      const std::string otherBlockLastOrigin  =  otherBlock.back()->GetTagValueAsString( tagImagePositionPatient );
+      const std::string otherBlockFirstOrigin = otherBlock.front()->GetTagValueAsString( tagImagePositionPatient ).value;
+      const std::string otherBlockLastOrigin  =  otherBlock.back()->GetTagValueAsString( tagImagePositionPatient ).value;
 
       // add matching blocks to current3DnTBlock
       // keep other blocks for later
@@ -163,23 +163,25 @@ mitk::ThreeDnTDICOMSeriesReader
        ++o, ++blockIter)
   {
     // bad copy&paste code from DICOMITKSeriesGDCMReader, should be handled in a better way
-    DICOMGDCMImageFrameList gdcmFrameInfoList = *blockIter;
+    DICOMDatasetAccessingImageFrameList gdcmFrameInfoList = *blockIter;
     assert(!gdcmFrameInfoList.empty());
 
     // reverse frames if necessary
     // update tilt information from absolute last sorting
-    const DICOMDatasetList datasetList = ToDICOMDatasetList( gdcmFrameInfoList );
+    const DICOMDatasetList datasetList = ConvertToDICOMDatasetList( gdcmFrameInfoList );
     m_NormalDirectionConsistencySorter->SetInput( datasetList );
     m_NormalDirectionConsistencySorter->Sort();
-    const DICOMGDCMImageFrameList sortedGdcmInfoFrameList = FromDICOMDatasetList( m_NormalDirectionConsistencySorter->GetOutput(0) );
+    const DICOMDatasetAccessingImageFrameList sortedGdcmInfoFrameList = ConvertToDICOMDatasetAccessingImageFrameList( m_NormalDirectionConsistencySorter->GetOutput(0) );
     const GantryTiltInformation& tiltInfo = m_NormalDirectionConsistencySorter->GetTiltInformation();
 
     // set frame list for current block
-    const DICOMImageFrameList frameList = ToDICOMImageFrameList( sortedGdcmInfoFrameList );
+    const DICOMImageFrameList frameList = ConvertToDICOMImageFrameList( sortedGdcmInfoFrameList );
     assert(!frameList.empty());
 
     DICOMImageBlockDescriptor block;
     block.SetTagCache( this->GetTagCache() ); // important: this must be before SetImageFrameList(), because SetImageFrameList will trigger reading of lots of interesting tags!
+    block.SetAdditionalTagsOfInterest(GetAdditionalTagsOfInterest());
+    block.SetTagLookupTableToPropertyFunctor(GetTagLookupTableToPropertyFunctor());
     block.SetImageFrameList( frameList );
     block.SetTiltInformation( tiltInfo );
 
@@ -226,16 +228,14 @@ mitk::ThreeDnTDICOMSeriesReader
   const GantryTiltInformation tiltInfo = block.GetTiltInformation();
   const bool hasTilt = tiltInfo.IsRegularGantryTilt();
 
-  const int numberOfTimesteps = block.GetIntProperty("timesteps", 1);
+  const int numberOfTimesteps = block.GetNumberOfTimeSteps();
 
   if (numberOfTimesteps == 1)
   {
     return DICOMITKSeriesGDCMReader::LoadMitkImageForImageBlockDescriptor(block);
   }
 
-  const int numberOfFramesPerTimestep = frames.size() / numberOfTimesteps;
-  assert( int(double((double)frames.size() / (double)numberOfTimesteps ))
-       == numberOfFramesPerTimestep ); // this should hold
+  const int numberOfFramesPerTimestep = block.GetNumberOfFramesPerTimeStep();
 
   ITKDICOMSeriesReaderHelper::StringContainerList filenamesPerTimestep;
   for (int timeStep = 0; timeStep<numberOfTimesteps; ++timeStep)

@@ -59,6 +59,8 @@ set(MODULE_TESTS
   mitkProgressBarTest.cpp
   mitkPropertyTest.cpp
   mitkPropertyListTest.cpp
+  mitkPropertyPersistenceTest.cpp
+  mitkPropertyPersistenceInfoTest.cpp
   mitkSlicedGeometry3DTest.cpp
   mitkSliceNavigationControllerTest.cpp
   mitkSurfaceTest.cpp
@@ -73,8 +75,10 @@ set(MODULE_TESTS
   mitkTransferFunctionTest.cpp
   mitkStepperTest.cpp
   mitkRenderingManagerTest.cpp
+  mitkCompositePixelValueToStringTest.cpp
   vtkMitkThickSlicesFilterTest.cpp
   mitkNodePredicateSourceTest.cpp
+  mitkNodePredicateDataPropertyTest.cpp
   mitkVectorTest.cpp
   mitkClippedSurfaceBoundsCalculatorTest.cpp
   mitkExceptionTest.cpp
@@ -109,6 +113,9 @@ set(MODULE_TESTS
   mitkRotatedSlice4DTest.cpp
   mitkLevelWindowManagerCppUnitTest.cpp
   mitkVectorPropertyTest.cpp
+  mitkTemporoSpatialStringPropertyTest.cpp
+  mitkPropertyNameHelperTest.cpp
+  mitkNodePredicateGeometryTest.cpp
 )
 
 if(MITK_ENABLE_RENDERING_TESTING)

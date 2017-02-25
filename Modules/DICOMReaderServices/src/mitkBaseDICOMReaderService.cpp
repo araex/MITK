@@ -21,9 +21,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkDICOMFileReaderSelector.h>
 #include <mitkImage.h>
 #include <mitkDICOMFilesHelper.h>
-
+#include <mitkDICOMTagsOfInterestHelper.h>
+#include <mitkDICOMProperty.h>
 #include <mitkDicomSeriesReader.h>
-
+#include <mitkDICOMDCMTKTagScanner.h>
+#include <mitkLocaleSwitch.h>
 #include <iostream>
 
 namespace mitk {
@@ -44,8 +46,7 @@ std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
   if (DicomSeriesReader::IsPhilips3DDicom(fileName))
   {
       MITK_INFO << "it is a Philips3D US Dicom file" << std::endl;
-      const char* previousCLocale = setlocale(LC_NUMERIC, NULL);
-      setlocale(LC_NUMERIC, "C");
+      mitk::LocaleSwitch localeSwitch("C");
       std::locale previousCppLocale(std::cin.getloc());
       std::locale l("C");
       std::cin.imbue(l);
@@ -60,7 +61,6 @@ std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
           data->GetPropertyList()->SetProperty("name", nameProp);
           result.push_back(data);
       }
-      setlocale(LC_NUMERIC, previousCLocale);
       std::cin.imbue(previousCppLocale);
       return result;
   }
@@ -68,40 +68,63 @@ std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
   //Normal DICOM handling (It wasn't a Philips 3D US)
   mitk::StringList relevantFiles = this->GetRelevantFiles();
 
-  mitk::DICOMFileReader::Pointer reader = this->GetReader(relevantFiles);
-
-  reader->SetInputFiles(relevantFiles);
-  reader->AnalyzeInputFiles();
-  reader->LoadImages();
-
-  for (unsigned int i = 0; i < reader->GetNumberOfOutputs(); ++i)
+  if (relevantFiles.empty())
   {
-    const mitk::DICOMImageBlockDescriptor& desc = reader->GetOutput(i);
-    mitk::BaseData::Pointer data = desc.GetMitkImage().GetPointer();
+      MITK_INFO << "DICOMReader service found no relevant files in specified location. No data is loaded. Location: "<<fileName;
+  }
+  else
+  {
+      mitk::DICOMFileReader::Pointer reader = this->GetReader(relevantFiles);
 
-    std::string nodeName = "Unnamed_DICOM";
-
-    std::string studyDescription = desc.GetPropertyAsString("studyDescription");
-    std::string seriesDescription = desc.GetPropertyAsString("seriesDescription");
-
-    if (!studyDescription.empty())
-    {
-      nodeName = studyDescription;
-    }
-
-    if (!seriesDescription.empty())
-    {
-      if (!studyDescription.empty())
+      if(reader.IsNull())
       {
-        nodeName += "/";
+          MITK_INFO << "DICOMReader service found no suitable reader configuration for relevant files.";
       }
-      nodeName += seriesDescription;
-    }
+      else
+      {
+          reader->SetAdditionalTagsOfInterest(mitk::GetCurrentDICOMTagsOfInterest());
+          reader->SetTagLookupTableToPropertyFunctor(mitk::GetDICOMPropertyForDICOMValuesFunctor);
+          reader->SetInputFiles(relevantFiles);
 
-    StringProperty::Pointer nameProp = StringProperty::New(nodeName);
-    data->SetProperty("name", nameProp);
+          mitk::DICOMDCMTKTagScanner::Pointer scanner = mitk::DICOMDCMTKTagScanner::New();
+          scanner->AddTagPaths(reader->GetTagsOfInterest());
+          scanner->SetInputFiles(relevantFiles);
+          scanner->Scan();
 
-    result.push_back(data);
+          reader->SetTagCache(scanner->GetScanCache());
+          reader->AnalyzeInputFiles();
+          reader->LoadImages();
+
+          for (unsigned int i = 0; i < reader->GetNumberOfOutputs(); ++i)
+          {
+            const mitk::DICOMImageBlockDescriptor& desc = reader->GetOutput(i);
+            mitk::BaseData::Pointer data = desc.GetMitkImage().GetPointer();
+
+            std::string nodeName = "Unnamed_DICOM";
+
+            std::string studyDescription = desc.GetPropertyAsString("studyDescription");
+            std::string seriesDescription = desc.GetPropertyAsString("seriesDescription");
+
+            if (!studyDescription.empty())
+            {
+              nodeName = studyDescription;
+            }
+
+            if (!seriesDescription.empty())
+            {
+              if (!studyDescription.empty())
+              {
+                nodeName += "/";
+              }
+              nodeName += seriesDescription;
+            }
+
+            StringProperty::Pointer nameProp = StringProperty::New(nodeName);
+            data->SetProperty("name", nameProp);
+
+            result.push_back(data);
+          }
+      }
   }
 
   return result;

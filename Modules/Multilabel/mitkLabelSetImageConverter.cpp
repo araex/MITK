@@ -14,10 +14,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <mitkLabelSetImageConverter.h>
+#include <mitkITKImageImport.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageCast.h>
-#include <mitkITKImageImport.h>
+#include <mitkLabelSetImageConverter.h>
 
 #include <itkComposeImageFilter.h>
 #include <itkExtractImageFilter.h>
@@ -25,7 +25,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <itkVectorIndexSelectionCastImageFilter.h>
 
 template <typename TPixel, unsigned int VDimension>
-static void ConvertLabelSetImageToImage(const itk::Image<TPixel, VDimension>*, mitk::LabelSetImage::ConstPointer labelSetImage, mitk::Image::Pointer& image)
+static void ConvertLabelSetImageToImage(const itk::Image<TPixel, VDimension> *,
+                                        mitk::LabelSetImage::ConstPointer labelSetImage,
+                                        mitk::Image::Pointer &image)
 {
   typedef itk::Image<TPixel, VDimension> ImageType;
   typedef itk::ComposeImageFilter<ImageType> ComposeFilterType;
@@ -40,15 +42,16 @@ static void ConvertLabelSetImageToImage(const itk::Image<TPixel, VDimension>*, m
 
     for (decltype(numberOfLayers) layer = 0; layer < numberOfLayers; ++layer)
     {
-      auto layerImage = mitk::ImageToItkImage<TPixel, VDimension>(layer != activeLayer
-        ? labelSetImage->GetLayerImage(layer)
-        : labelSetImage);
+      auto layerImage = mitk::ImageToItkImage<TPixel, VDimension>(
+        layer != activeLayer ? labelSetImage->GetLayerImage(layer) : labelSetImage);
 
       vectorImageComposer->SetInput(layer, layerImage);
     }
 
     vectorImageComposer->Update();
-    image = mitk::GrabItkImageMemory(vectorImageComposer->GetOutput());
+    // mitk::GrabItkImageMemory does not support 4D, this will handle 4D correctly
+    // and create a memory managed copy
+    image = mitk::ImportItkImage(vectorImageComposer->GetOutput())->Clone();
   }
   else
   {
@@ -58,7 +61,9 @@ static void ConvertLabelSetImageToImage(const itk::Image<TPixel, VDimension>*, m
     duplicator->SetInputImage(layerImage);
     duplicator->Update();
 
-    image = mitk::GrabItkImageMemory(duplicator->GetOutput());
+    // mitk::GrabItkImageMemory does not support 4D, this will handle 4D correctly
+    // and create a memory managed copy
+    image = mitk::ImportItkImage(duplicator->GetOutput())->Clone();
   }
 }
 
@@ -66,47 +71,15 @@ mitk::Image::Pointer mitk::ConvertLabelSetImageToImage(LabelSetImage::ConstPoint
 {
   Image::Pointer image;
 
-  if (labelSetImage->GetNumberOfLayers() > 1)
-    mitkThrow() << "Multi-layer label set images not yet supported!";
-
-  if (labelSetImage->GetNumberOfLayers() != 0)
+  if (labelSetImage->GetNumberOfLayers() > 0)
   {
     if (labelSetImage->GetDimension() == 4)
     {
-      // Multi-layer label set images not yet supported
-      // AccessByItk_2(labelSetImage3D, ::ConvertLabelSetImageToImage, labelSetImage, image);
-
-      auto layerImage = mitk::ImageToItkImage<unsigned short, 4>(labelSetImage);
-
-      auto duplicator = itk::ImageDuplicator<itk::Image<unsigned short, 4>>::New(); // TODO: Check why a simple clone isn't working!
-      duplicator->SetInputImage(layerImage);
-      duplicator->Update();
-
-      // GrabItkImageMemory doesn't support 4D images!
-      // image = mitk::GrabItkImageMemory(duplicator->GetOutput());
-
-      auto output = duplicator->GetOutput();
-
-      image = Image::New();
-      image->InitializeByItk(output);
-
-      const auto numberOfVoxels = labelSetImage->GetDimension(0) * labelSetImage->GetDimension(1) * labelSetImage->GetDimension(2);
-
-      for (unsigned int t = 0; t < labelSetImage->GetTimeSteps(); ++t)
-        image->SetImportVolume(output->GetBufferPointer() + t * numberOfVoxels, t, 0);
+      AccessFixedDimensionByItk_n(labelSetImage, ::ConvertLabelSetImageToImage, 4, (labelSetImage, image));
     }
     else
     {
-      // Multi-layer label set images not yet supported
-      // AccessByItk_2(labelSetImage->GetLayerImage(0), ::ConvertLabelSetImageToImage, labelSetImage, image);
-
-      auto layerImage = mitk::ImageToItkImage<unsigned short, 3>(labelSetImage);
-
-      auto duplicator = itk::ImageDuplicator<itk::Image<unsigned short, 3>>::New(); // TODO: Check why a simple clone isn't working!
-      duplicator->SetInputImage(layerImage);
-      duplicator->Update();
-
-      image = mitk::GrabItkImageMemory(duplicator->GetOutput());
+      AccessByItk_2(labelSetImage->GetLayerImage(0), ::ConvertLabelSetImageToImage, labelSetImage, image);
     }
   }
 
@@ -114,7 +87,8 @@ mitk::Image::Pointer mitk::ConvertLabelSetImageToImage(LabelSetImage::ConstPoint
 }
 
 template <typename TPixel, unsigned int VDimensions>
-static void ConvertImageToLabelSetImage(const itk::VectorImage<TPixel, VDimensions>* image, mitk::LabelSetImage::Pointer& labelSetImage)
+static void ConvertImageToLabelSetImage(const itk::VectorImage<TPixel, VDimensions> *image,
+                                        mitk::LabelSetImage::Pointer &labelSetImage)
 {
   typedef itk::VectorImage<TPixel, VDimensions> VectorImageType;
   typedef itk::Image<TPixel, VDimensions> ImageType;
@@ -152,7 +126,14 @@ mitk::LabelSetImage::Pointer mitk::ConvertImageToLabelSetImage(Image::Pointer im
   {
     if (image->GetChannelDescriptor().GetPixelType().GetPixelType() == itk::ImageIOBase::VECTOR)
     {
-      AccessVectorPixelTypeByItk_n(image, ::ConvertImageToLabelSetImage, (labelSetImage));
+      if (4 == image->GetDimension())
+      {
+        AccessVectorFixedDimensionByItk_n(image, ::ConvertImageToLabelSetImage, 4, (labelSetImage));
+      }
+      else
+      {
+        AccessVectorPixelTypeByItk_n(image, ::ConvertImageToLabelSetImage, (labelSetImage));
+      }
     }
     else
     {

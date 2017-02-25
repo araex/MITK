@@ -79,7 +79,8 @@ macro(mitk_create_executable)
       add_dependencies(${MODULE_TARGET} ${CMAKE_PROJECT_NAME}-autoload)
     endif()
 
-    # Create batch files for Windows platforms
+    # Create batch and VS user files for Windows platforms
+    include(mitkFunctionCreateWindowsBatchScript)
     if(WIN32)
       set(_batch_file_in "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE_TARGET}.bat.in")
       if(NOT EXISTS "${_batch_file_in}")
@@ -91,6 +92,9 @@ macro(mitk_create_executable)
         set(_batch_file_out_dir "${CMAKE_CURRENT_BINARY_DIR}")
       endif()
       if(NOT EXEC_NO_BATCH_FILE)
+        if(NOT EXEC_NAME)
+          set(EXEC_NAME ${MODULE_TARGET})
+        endif()
         foreach(BUILD_TYPE debug release)
           mitkFunctionCreateWindowsBatchScript(
               ${_batch_file_in} ${_batch_file_out_dir}/${MODULE_TARGET}_${BUILD_TYPE}.bat
@@ -98,6 +102,9 @@ macro(mitk_create_executable)
              )
         endforeach()
       endif()
+      mitkFunctionConfigureVisualStudioUserProjectFile(
+          NAME ${MODULE_TARGET}
+        )
     endif()
   endif()
 
