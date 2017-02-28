@@ -277,6 +277,7 @@ mitkFunctionAddExternalProject(NAME SOFA      OFF          DEPENDS GLUT Eigen Bo
 mitkFunctionAddExternalProject(NAME VMTK      OFF          DEPENDS ITK VTK)
 mitkFunctionAddExternalProject(NAME DCMQI     OFF          DEPENDS DCMTK ITK DOC "Use dcmqi in MITK")
 mitkFunctionAddExternalProject(NAME MatchPoint  OFF ADVANCED  DEPENDS ITK DOC "Use the MatchPoint translation image registration library")
+mitkFunctionAddExternalProject(NAME CGAL      ON           DEPENDS VTK Boost)
 
 if(MITK_USE_Qt5)
   mitkFunctionAddExternalProject(NAME Qwt     ON  ADVANCED DEPENDS Qt5)
@@ -340,6 +341,39 @@ if(MITK_USE_SOFA)
   # Allow setting external SOFA plugins directory and SOFA plugins
   set(MITK_USE_SOFA_PLUGINS_DIR ${MITK_USE_SOFA_PLUGINS_DIR} CACHE PATH "External SOFA plugins directory" FORCE)
   set(MITK_USE_SOFA_PLUGINS ${MITK_USE_SOFA_PLUGINS} CACHE PATH "List of semicolon-separated plugin names" FORCE)
+endif()
+
+if(MITK_USE_CGAL)
+    find_package(GMP MODULE) 
+    find_package(MPFR MODULE)
+    if(NOT GMP_LIBRARIES OR NOT MPFR_LIBRARIES OR NOT GMP_INCLUDE_DIR OR NOT MPFR_INCLUDE_DIR)
+      message(FATAL_ERROR "Could not find GMP and MPFR. Please install separatly and rerun CMake. On Windows, we recommend using the the CGAL installer to install those dependencies.")
+    endif()
+  
+  # CGAL requires boost system library
+  list(FIND MITK_USE_Boost_LIBRARIES system _result)
+  if(_result LESS 0)
+    message("> Adding 'system' to MITK_USE_Boost_LIBRARIES.")
+    list(APPEND MITK_USE_Boost_LIBRARIES system)
+  endif()
+  # CGAL requires boost thread library
+  list(FIND MITK_USE_Boost_LIBRARIES thread _result)
+  if(_result LESS 0)
+    message("> Adding 'thread' to MITK_USE_Boost_LIBRARIES.")
+    list(APPEND MITK_USE_Boost_LIBRARIES thread)
+  endif()
+  set(MITK_USE_Boost_LIBRARIES ${MITK_USE_Boost_LIBRARIES} CACHE STRING "" FORCE)
+endif()
+
+# sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
+if(MITK_USE_QT AND MITK_USE_Python)
+  set(minimum_required_python_qt5_version "5.3.0")
+  find_package(Qt5 COMPONENTS Core REQUIRED)
+
+  if(${Qt5Core_VERSION_STRING} VERSION_LESS ${minimum_required_python_qt5_version})
+    message(WARNING "Can't build MITK Python with Qt version < ${minimum_required_python_qt5_version}. Disabling Python support")
+    set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
+  endif()
 endif()
 
 # only windows can't build python in debug mode
@@ -524,6 +558,7 @@ include(mitkFunctionCreateCommandLineApp)
 include(mitkFunctionCreateModule)
 include(mitkFunctionCreatePlugin)
 include(mitkFunctionCreateProvisioningFile)
+include(mitkFunctionCreateWindowsBatchScript)
 include(mitkFunctionGetLibrarySearchPaths)
 include(mitkFunctionGetVersion)
 include(mitkFunctionGetVersionDescription)
@@ -732,7 +767,6 @@ if(WIN32)
   mitkFunctionCheckCompilerFlags("/wd4231" MITK_CXX_FLAGS) # warning C4231: nonstandard extension used : 'extern' before template explicit instantiation
   # the following line should be removed after fixing bug 17637
   mitkFunctionCheckCompilerFlags("/wd4316" MITK_CXX_FLAGS) # warning C4316: object alignment on heap
-  mitkFunctionCheckCompilerFlags("/wd4180" MITK_CXX_FLAGS) # warning C4180: qualifier applied to function type has no meaning
 endif()
 
 if(NOT MSVC_VERSION)
@@ -1361,6 +1395,24 @@ configure_file(MITKConfig.cmake.in ${MITK_BINARY_DIR}/MITKConfig.cmake @ONLY)
 
 write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   VERSION ${MITK_VERSION_STRING} COMPATIBILITY AnyNewerVersion)
+
+# If we are under Windows, create two batch files which correctly
+# set up the environment for the application and for Visual Studio
+if(WIN32)
+  include(mitkFunctionCreateWindowsBatchScript)
+
+  set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
+  if(MITK_USE_HDF5)
+    list(APPEND MITK_LIBRARY_DIRS ${HDF5_DIR}/install/bin)
+    message(STATUS "MITK-Runtime " ${MITK_RUNTIME_PATH})
+  endif(MITK_USE_HDF5)
+  foreach(VS_BUILD_TYPE debug release)
+    mitkFunctionCreateWindowsBatchScript("${MITK_SOURCE_DIR}/CMake/StartVS.bat.in"
+      ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
+      ${VS_BUILD_TYPE})
+  endforeach()
+endif(WIN32)
+
 
 #-----------------------------------------------------------------------------
 # MITK Applications
