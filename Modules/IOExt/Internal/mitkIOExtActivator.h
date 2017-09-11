@@ -39,6 +39,9 @@ namespace mitk
     std::unique_ptr<IFileWriter> m_ObjWriter;
 
     std::unique_ptr<IFileReader> m_PlyReader;
+    std::unique_ptr<IFileReader> m_WrlReader;
+    std::unique_ptr<IFileWriter> m_WrlWriter;
+
   };
 }
 

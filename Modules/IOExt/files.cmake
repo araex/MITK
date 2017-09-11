@@ -4,6 +4,8 @@ set(CPP_FILES
   Internal/mitkObjFileReaderService.cpp
   Internal/mitkPlyFileWriterService.cpp
   Internal/mitkPlyFileReaderService.cpp
+  Internal/mitkWrlFileReaderService.cpp
+  Internal/mitkWrlFileWriterService.cpp
   Internal/mitkParRecFileIOFactory.cpp
   Internal/mitkParRecFileReader.cpp
   Internal/mitkSceneFileReader.cpp
