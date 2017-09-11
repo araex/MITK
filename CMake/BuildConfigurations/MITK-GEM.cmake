@@ -21,4 +21,5 @@ set(MITK_CONFIG_PLUGINS
   org.mitk.gui.qt.imagecropper
   org.mitk.gui.qt.multilabelsegmentation
   org.mitk.gui.qt.basicimageprocessing
+  org.mitk.gui.qt.common.legacy
 )

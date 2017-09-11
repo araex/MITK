@@ -155,6 +155,15 @@ namespace mitk
     return mimeType;
   }
 
+  CustomMimeType IOMimeTypes::WRL_MIMETYPE()
+  {
+    CustomMimeType mimeType(WRL_NAME());
+    mimeType.AddExtension("wrl");
+    mimeType.SetCategory(CATEGORY_SURFACES());
+    mimeType.SetComment("Virtual Reality Markup Language");
+    return mimeType;
+  }
+
   std::string IOMimeTypes::STEREOLITHOGRAPHY_NAME()
   {
     static std::string name = DEFAULT_BASE_NAME() + ".stl";
@@ -170,6 +179,12 @@ namespace mitk
   std::string IOMimeTypes::STANFORD_PLY_NAME()
   {
     static std::string name = DEFAULT_BASE_NAME() + ".ply";
+    return name;
+  }
+
+  std::string IOMimeTypes::WRL_NAME()
+  {
+    static std::string name = DEFAULT_BASE_NAME() + ".wrl";
     return name;
   }
 

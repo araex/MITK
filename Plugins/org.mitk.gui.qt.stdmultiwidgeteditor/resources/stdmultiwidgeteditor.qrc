@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/stdmultiwidgeteditor">
+    <file>overlay.png</file>
+  </qresource>
+</RCC>

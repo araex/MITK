@@ -34,6 +34,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkUnstructuredGridVtkMapper3D.h"
 #include "mitkVtkGLMapperWrapper.h"
 
+#include "mitkGridRepresentationProperty.h"
+
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -58,9 +60,9 @@ mitk::IOExtObjectFactory::IOExtObjectFactory()
 
     itk::ObjectFactoryBase::RegisterFactory(m_UnstructuredGridVtkWriterFactory);
 
-    m_FileWriters.push_back(mitk::UnstructuredGridVtkWriter<vtkUnstructuredGridWriter>::New().GetPointer());
+//    m_FileWriters.push_back(mitk::UnstructuredGridVtkWriter<vtkUnstructuredGridWriter>::New().GetPointer());
     m_FileWriters.push_back(mitk::UnstructuredGridVtkWriter<vtkXMLUnstructuredGridWriter>::New().GetPointer());
-    m_FileWriters.push_back(mitk::UnstructuredGridVtkWriter<vtkXMLPUnstructuredGridWriter>::New().GetPointer());
+//    m_FileWriters.push_back(mitk::UnstructuredGridVtkWriter<vtkXMLPUnstructuredGridWriter>::New().GetPointer());
 
     CreateFileExtensionsMap();
 
@@ -91,8 +93,8 @@ mitk::Mapper::Pointer mitk::IOExtObjectFactory::CreateMapper(mitk::DataNode *nod
     }
     else if ((dynamic_cast<UnstructuredGrid *>(data) != NULL))
     {
-      newMapper = mitk::VtkGLMapperWrapper::New(mitk::UnstructuredGridMapper2D::New().GetPointer());
-      newMapper->SetDataNode(node);
+//      newMapper = mitk::VtkGLMapperWrapper::New(mitk::UnstructuredGridMapper2D::New().GetPointer());
+//      newMapper->SetDataNode(node);
     }
   }
   else if (id == mitk::BaseRenderer::Standard3D)
@@ -109,8 +111,8 @@ mitk::Mapper::Pointer mitk::IOExtObjectFactory::CreateMapper(mitk::DataNode *nod
     }
     else if ((dynamic_cast<UnstructuredGrid *>(data) != NULL))
     {
-      newMapper = mitk::UnstructuredGridVtkMapper3D::New();
-      newMapper->SetDataNode(node);
+//      newMapper = mitk::UnstructuredGridVtkMapper3D::New();
+//      newMapper->SetDataNode(node);
     }
   }
   return newMapper;

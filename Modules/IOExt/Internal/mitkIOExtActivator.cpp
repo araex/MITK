@@ -19,6 +19,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkObjFileReaderService.h"
 #include "mitkPlyFileReaderService.h"
 #include "mitkPlyFileWriterService.h"
+#include "mitkWrlFileWriterService.h"
+#include "mitkWrlFileReaderService.h"
 #include "mitkSceneFileReader.h"
 #include "mitkVtkUnstructuredGridReader.h"
 
@@ -33,6 +35,9 @@ namespace mitk
 
     m_PlyReader.reset(new PlyFileReaderService());
     m_ObjWriter.reset(new PlyFileWriterService());
+
+    m_WrlReader.reset(new WrlFileReaderService());
+    m_WrlWriter.reset(new WrlFileWriterService());
   }
 
   void IOExtActivator::Unload(us::ModuleContext *) {}

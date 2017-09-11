@@ -31,7 +31,7 @@ QmitkAboutDialog::QmitkAboutDialog(QWidget *parent, Qt::WindowFlags f) : QDialog
   QString itkVersion = QString("%1.%2.%3").arg(ITK_VERSION_MAJOR).arg(ITK_VERSION_MINOR).arg(ITK_VERSION_PATCH);
   QString vtkVersion = QString("%1.%2.%3").arg(VTK_MAJOR_VERSION).arg(VTK_MINOR_VERSION).arg(VTK_BUILD_VERSION);
 
-  QString revisionText = QString("Revision: %1").arg(MITK_REVISION);
+  QString revisionText = QString("MITK Revision: %1").arg(MITK_REVISION);
 
   if (!QString(MITK_REVISION_DESC).isEmpty())
     revisionText += QString("\nDescription: %1").arg(MITK_REVISION_DESC);
@@ -61,10 +61,10 @@ QString QmitkAboutDialog::GetAboutText() const
   return m_GUI.m_AboutLabel->text();
 }
 
-QString QmitkAboutDialog::GetCaptionText() const
-{
-  return m_GUI.m_CaptionLabel->text();
-}
+//QString QmitkAboutDialog::GetCaptionText() const
+//{
+//  return m_GUI.m_CaptionLabel->text();
+//}
 
 QString QmitkAboutDialog::GetRevisionText() const
 {
@@ -76,10 +76,10 @@ void QmitkAboutDialog::SetAboutText(const QString &text)
   m_GUI.m_AboutLabel->setText(text);
 }
 
-void QmitkAboutDialog::SetCaptionText(const QString &text)
-{
-  m_GUI.m_CaptionLabel->setText(text);
-}
+//void QmitkAboutDialog::SetCaptionText(const QString &text)
+//{
+//  m_GUI.m_CaptionLabel->setText(text);
+//}
 
 void QmitkAboutDialog::SetRevisionText(const QString &text)
 {
