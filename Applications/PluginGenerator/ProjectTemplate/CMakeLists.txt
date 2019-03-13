@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.2.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 # Change project and application name to your own
 set(MY_PROJECT_NAME $(project-name))
 set(MY_APP_NAME $(project-app-name))
 
 #-----------------------------------------------------------------------------
-# Set the language standard (MITK requires C++11)
+# Set the language standard (MITK requires C++14)
 #-----------------------------------------------------------------------------
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED 1)
 set(CMAKE_CXX_EXTENSIONS 0)
 
@@ -126,7 +126,7 @@ endif()
 set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
 set(MODULES_PACKAGE_DEPENDS_DIRS ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})
 
-find_package(MITK 2016.03.00 REQUIRED)
+find_package(MITK 2018.04.00 REQUIRED)
 
 if(COMMAND mitkFunctionCheckMitkCompatibility)
   mitkFunctionCheckMitkCompatibility(VERSIONS MITK_VERSION_PLUGIN_SYSTEM 1 REQUIRED)
@@ -162,7 +162,7 @@ set(${PROJECT_NAME}_VERSION_STRING "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT
 option(${PROJECT_NAME}_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications" ON)
 mark_as_advanced(${PROJECT_NAME}_SHOW_CONSOLE_WINDOW)
 
-if(NOT UNIX AND NOT MINGW)
+if(NOT UNIX)
   set(MITK_WIN32_FORCE_STATIC "STATIC")
 endif()
 
@@ -178,7 +178,7 @@ mitkFunctionGetVersion(${PROJECT_SOURCE_DIR} ${PROJECT_NAME})
 # These should be set before any MITK install macros are used
 #-----------------------------------------------------------------------------
 
-# on Mac OSX all CTK plugins get copied into every
+# on macOS all CTK plugins get copied into every
 # application bundle (.app directory) specified here
 set(MACOSX_BUNDLE_NAMES)
 if(APPLE)
@@ -189,8 +189,7 @@ endif(APPLE)
 # Set symbol visibility Flags
 #-----------------------------------------------------------------------------
 
-# MinGW does not export all symbols automatically, so no need to set flags
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
+if(CMAKE_COMPILER_IS_GNUCXX)
   # The MITK module build system does not yet support default hidden visibility
   set(VISIBILITY_CXX_FLAGS ) # "-fvisibility=hidden -fvisibility-inlines-hidden")
 endif()
@@ -338,16 +337,3 @@ include(mitkInstallRules)
 #-----------------------------------------------------------------------------
 # Last configuration steps
 #-----------------------------------------------------------------------------
-
-# If we are under Windows, create two batch files which correctly
-# set up the environment for the application and for Visual Studio
-if(WIN32)
-  include(mitkFunctionCreateWindowsBatchScript)
-
-  set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
-  foreach(VS_BUILD_TYPE debug release)
-    mitkFunctionCreateWindowsBatchScript("${PROJECT_SOURCE_DIR}/CMake/StartVS.bat.in"
-      ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat
-      ${VS_BUILD_TYPE})
-  endforeach()
-endif(WIN32)

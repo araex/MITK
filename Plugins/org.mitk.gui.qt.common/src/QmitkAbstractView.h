@@ -17,13 +17,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QMITKABSTRACTVIEW_H_
 #define QMITKABSTRACTVIEW_H_
 
-#ifdef __MINGW32__
-// We need to inlclude winbase.h here in order to declare
-// atomic intrinsics like InterlockedIncrement correctly.
-// Otherwhise, they would be declared wrong within qatomic_windows.h .
-#include <windows.h>
-#endif
-
 //# blueberry stuff
 #include <berryQtViewPart.h>
 #include <berryIPreferencesService.h>
@@ -138,7 +131,7 @@ public:
   /**
    * Disconnects all standard event listeners
    */
-  virtual ~QmitkAbstractView();
+  ~QmitkAbstractView() override;
 
 protected:
 
@@ -169,7 +162,7 @@ protected:
   /**
    * Queries the state of the current selection.
    *
-   * \return If the current selection is <code>NULL</code>, this method returns
+   * \return If the current selection is <code>nullptr</code>, this method returns
    * <code>false</code> and <code>true</code> otherwise.
    */
   bool IsCurrentSelectionValid() const;
@@ -185,7 +178,7 @@ protected:
   /**
    * Queries the state of the current selection of the data manager view.
    *
-   * \return If the current data manager selection is <code>NULL</code>, this method returns
+   * \return If the current data manager selection is <code>nullptr</code>, this method returns
    * <code>false</code> and <code>true</code> otherwise.
    */
   bool IsDataManagerSelectionValid() const;
@@ -316,7 +309,7 @@ private:
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
   /**
-   * Called when a <code>NULL</code> selection occurs.
+   * Called when a <code>nullptr</code> selection occurs.
    *
    * \param part The source part responsible for the selection change.
    */

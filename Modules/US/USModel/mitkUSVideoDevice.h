@@ -21,6 +21,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkCommon.h>
 #include "mitkUSDevice.h"
 #include "mitkUSImageVideoSource.h"
+#include "mitkUSProbe.h"
 #include <itkObjectFactory.h>
 
 namespace itk {
@@ -56,7 +57,7 @@ namespace mitk {
     /**
     * \return the qualified name of this class (as returned by GetDeviceClassStatic())
     */
-    virtual std::string GetDeviceClass() override;
+    std::string GetDeviceClass() override;
 
     /**
      * This methode is necessary instead of a static member attribute to avoid
@@ -73,7 +74,7 @@ namespace mitk {
     *
     * \return custom control interface of the video device
     */
-    virtual itk::SmartPointer<USAbstractControlInterface> GetControlInterfaceCustom() override;
+    itk::SmartPointer<USAbstractControlInterface> GetControlInterfaceCustom() override;
 
     /**
     * \brief Remove this device from the micro service.
@@ -86,11 +87,67 @@ namespace mitk {
     /**
     * \return mitk::USImageSource connected to this device
     */
-    virtual USImageSource::Pointer GetUSImageSource() override;
+    USImageSource::Pointer GetUSImageSource() override;
 
-    itkGetMacro(Image, mitk::Image::Pointer);
-    itkGetMacro(DeviceID,int);
-    itkGetMacro(FilePath,std::string);
+    /**
+    * \brief Return all probes for this USVideoDevice or an empty vector it no probes were set
+    * Returns a std::vector of all probes that exist for this USVideoDevice if there were probes set while creating or modifying this USVideoDevice.
+    * Otherwise it returns an empty vector. Therefore always check if vector is filled, before using it!
+    */
+    std::vector<mitk::USProbe::Pointer> GetAllProbes();
+
+    /**
+    * \brief Cleans the std::vector containing all configured probes.
+    */
+    void DeleteAllProbes();
+
+    /**
+    * \brief Return current active probe for this USVideoDevice
+    * Returns a pointer to the probe that is currently in use. If there were probes set while creating or modifying this USVideoDevice.
+    * Returns null otherwise
+    */
+    mitk::USProbe::Pointer GetCurrentProbe();
+
+    /**
+    \brief adds a new probe to the device
+    */
+    void AddNewProbe(mitk::USProbe::Pointer probe);
+
+    /**
+    * \brief get the probe by its name
+    * Returns a  pointer to the probe identified by the given name. If no probe of given name exists for this Device 0 is returned.
+    */
+    mitk::USProbe::Pointer GetProbeByName(std::string name);
+
+    /**
+    * \brief Removes the Probe with the given name
+    */
+    void RemoveProbeByName(std::string name);
+
+    /**
+    \brief True, if this Device plays back a file, false if it recieves data from a device
+    */
+    bool GetIsSourceFile();
+
+    /**
+    * \brief Sets the first existing probe or the default probe of the video device
+    * as the current probe of it.
+    */
+    void SetDefaultProbeAsCurrentProbe();
+
+    /**
+    * \brief Sets the probe with the given name as current probe if the named probe exists.
+    */
+    void SetCurrentProbe( std::string probename );
+
+    /**
+    * \brief Sets the given spacing of the current depth of the current probe.
+    */
+    void SetSpacing( double xSpacing, double ySpacing ) override;
+
+    itkGetMacro(ImageVector, std::vector<mitk::Image::Pointer>);
+    itkGetMacro(DeviceID, int);
+    itkGetMacro(FilePath, std::string);
   protected:
 
     /**
@@ -114,7 +171,7 @@ namespace mitk {
     */
     USVideoDevice(std::string videoFilePath, mitk::USImageMetadata::Pointer metadata);
 
-    virtual ~USVideoDevice();
+    ~USVideoDevice() override;
 
     /**
     * \brief Initializes common properties for all constructors.
@@ -125,29 +182,35 @@ namespace mitk {
     * \brief Is called during the initialization process.
     *  Returns true if successful and false if unsuccessful. Additionally, you may throw an exception to clarify what went wrong.
     */
-    virtual bool OnInitialization() override;
+    bool OnInitialization() override;
 
     /**
     * \brief Is called during the connection process.
     *  Returns true if successful and false if unsuccessful. Additionally, you may throw an exception to clarify what went wrong.
     */
-    virtual bool OnConnection() override;
+    bool OnConnection() override;
 
     /**
     * \brief Is called during the disconnection process.
     *  Returns true if successful and false if unsuccessful. Additionally, you may throw an exception to clarify what went wrong.
     */
-    virtual bool OnDisconnection() override;
+    bool OnDisconnection() override;
 
     /**
     * \brief Is called during the activation process. After this method is finsihed, the device should be generating images
     */
-    virtual bool OnActivation() override;
+    bool OnActivation() override;
 
     /**
     * \brief Is called during the deactivation process. After a call to this method the device should still be connected, but not producing images anymore.
     */
-    virtual bool OnDeactivation() override;
+    bool OnDeactivation() override;
+
+    /**
+    * \brief Grabs the next frame from the Video input.
+    * This method is called internally, whenever Update() is invoked by an Output.
+    */
+    virtual void GenerateData() override;
 
     /**
     * \brief The image source that we use to aquire data
@@ -173,6 +236,16 @@ namespace mitk {
     * \brief custom control interface for us video device
     */
     itk::SmartPointer<USVideoDeviceCustomControls> m_ControlInterfaceCustom;
+
+    /**
+    * \brief probes for this USVideoDevice
+    */
+    std::vector < mitk::USProbe::Pointer > m_Probes;
+
+    /**
+    \brief probe that is currently in use
+    */
+    mitk::USProbe::Pointer m_CurrentProbe;
   };
 } // namespace mitk
 

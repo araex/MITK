@@ -34,8 +34,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <QmitkMouseModeSwitcher.h>
 #include <QmitkStdMultiWidget.h>
 
-#include <mbilogo.h>
-
 class QmitkStdMultiWidgetEditorPrivate
 {
 public:
@@ -67,7 +65,7 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
 
   Events::Types GetPartEventTypes() const override
   {
-    return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
+    return Events::CLOSED | Events::HIDDEN | Events::VISIBLE | Events::OPENED;
   }
 
   void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
@@ -92,13 +90,25 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
 
       if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
       {
-        d->m_StdMultiWidget->RemovePlanesFromDataStorage();
         stdMultiWidgetEditor->RequestActivateMenuWidget(false);
       }
     }
   }
 
   void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
+  {
+    if (partRef->GetId() == QmitkStdMultiWidgetEditor::EDITOR_ID)
+    {
+      QmitkStdMultiWidgetEditor::Pointer stdMultiWidgetEditor = partRef->GetPart(false).Cast<QmitkStdMultiWidgetEditor>();
+
+      if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
+      {
+        stdMultiWidgetEditor->RequestActivateMenuWidget(true);
+      }
+    }
+  }
+
+  void PartOpened(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkStdMultiWidgetEditor::EDITOR_ID)
     {
@@ -119,7 +129,7 @@ private:
 };
 
 QmitkStdMultiWidgetEditorPrivate::QmitkStdMultiWidgetEditorPrivate()
-  : m_StdMultiWidget(0), m_MouseModeToolbar(0)
+  : m_StdMultiWidget(nullptr), m_MouseModeToolbar(nullptr)
   , m_MenuWidgetsEnabled(false)
   , m_PartListener(new QmitkStdMultiWidgetPartListener(this))
 {}
@@ -148,7 +158,7 @@ QmitkStdMultiWidget* QmitkStdMultiWidgetEditor::GetStdMultiWidget()
 QmitkRenderWindow *QmitkStdMultiWidgetEditor::GetActiveQmitkRenderWindow() const
 {
   if (d->m_StdMultiWidget) return d->m_StdMultiWidget->GetRenderWindow1();
-  return 0;
+  return nullptr;
 }
 
 QHash<QString, QmitkRenderWindow *> QmitkStdMultiWidgetEditor::GetQmitkRenderWindows() const
@@ -161,7 +171,7 @@ QmitkRenderWindow *QmitkStdMultiWidgetEditor::GetQmitkRenderWindow(const QString
   if (d->m_RenderWindows.contains(id))
     return d->m_RenderWindows[id];
 
-  return 0;
+  return nullptr;
 }
 
 mitk::Point3D QmitkStdMultiWidgetEditor::GetSelectedPosition(const QString & /*id*/) const
@@ -246,7 +256,7 @@ bool QmitkStdMultiWidgetEditor::IsSlicingPlanesEnabled() const
   if (node.IsNotNull())
   {
     bool visible = false;
-    node->GetVisibility(visible, 0);
+    node->GetVisibility(visible, nullptr);
     return visible;
   }
   else
@@ -257,12 +267,12 @@ bool QmitkStdMultiWidgetEditor::IsSlicingPlanesEnabled() const
 
 void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_StdMultiWidget == 0)
+  if (d->m_StdMultiWidget == nullptr)
   {
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
 
-    if (d->m_MouseModeToolbar == NULL)
+    if (d->m_MouseModeToolbar == nullptr)
     {
       d->m_MouseModeToolbar = new QmitkMouseModeSwitcher(parent); // delete by Qt via parent
       layout->addWidget(d->m_MouseModeToolbar);
@@ -272,7 +282,7 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
     mitk::BaseRenderer::RenderingMode::Type renderingMode = static_cast<mitk::BaseRenderer::RenderingMode::Type>(prefs->GetInt( "Rendering Mode" , 0 ));
 
-    d->m_StdMultiWidget = new QmitkStdMultiWidget(parent,0,0,renderingMode);
+    d->m_StdMultiWidget = new QmitkStdMultiWidget(parent,nullptr,nullptr,renderingMode);
     d->m_RenderWindows.insert("axial", d->m_StdMultiWidget->GetRenderWindow1());
     d->m_RenderWindows.insert("sagittal", d->m_StdMultiWidget->GetRenderWindow2());
     d->m_RenderWindows.insert("coronal", d->m_StdMultiWidget->GetRenderWindow3());
@@ -289,7 +299,7 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
     // Initialize views as axial, sagittal, coronar to all data objects in DataStorage
     // (from top-left to bottom)
-    mitk::TimeGeometry::Pointer geo = ds->ComputeBoundingGeometry3D(ds->GetAll());
+    auto geo = ds->ComputeBoundingGeometry3D(ds->GetAll());
     mitk::RenderingManager::GetInstance()->InitializeViews(geo);
 
     // Initialize bottom-right view as 3D view
@@ -326,6 +336,11 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   // If no logo was set for this plug-in specifically, walk the parent preference nodes
   // and lookup a logo value there.
 
+  //We need to disable the logo first, otherwise setting a new logo will have no effect due to how mitkManufacturerLogo works
+  d->m_StdMultiWidget->DisableDepartmentLogo();
+  d->m_StdMultiWidget->SetDepartmentLogo(qPrintable(":/org.mitk.gui.qt.stdmultiwidgeteditor/defaultWatermark.png"));
+  d->m_StdMultiWidget->EnableDepartmentLogo();
+
   const berry::IPreferences* currentNode = prefs;
 
   while(currentNode)
@@ -346,7 +361,7 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
           // we need to disable the logo first, otherwise setting a new logo will have
           // no effect due to how mitkManufacturerLogo works...
           d->m_StdMultiWidget->DisableDepartmentLogo();
-          d->m_StdMultiWidget->SetDepartmentLogoPath(qPrintable(departmentLogoLocation));
+          d->m_StdMultiWidget->SetDepartmentLogo(qPrintable(departmentLogoLocation));
           d->m_StdMultiWidget->EnableDepartmentLogo();
         }
         logoFound = true;
@@ -520,7 +535,7 @@ void QmitkStdMultiWidgetEditor::InitializePreferences(berry::IBerryPreferences *
 
 void QmitkStdMultiWidgetEditor::SetFocus()
 {
-  if (d->m_StdMultiWidget != 0)
+  if (d->m_StdMultiWidget != nullptr)
     d->m_StdMultiWidget->setFocus();
 }
 

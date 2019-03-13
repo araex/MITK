@@ -39,13 +39,13 @@ bool mitk::USVideoDeviceCustomControls::GetIsActive()
 void mitk::USVideoDeviceCustomControls::SetCropArea(mitk::USImageVideoSource::USImageCropping newArea)
 {
   MITK_INFO << "Set Crop Area L:" << newArea.left << " R:" << newArea.right
-            << " T:" << newArea.top << " B:" << newArea.bottom;
+    << " T:" << newArea.top << " B:" << newArea.bottom;
 
   if (m_ImageSource.IsNotNull())
   {
     // if area is empty, remove region
-    if((newArea.bottom==0) && (newArea.top==0)&&
-      (newArea.left==0) && (newArea.right==0))
+    if ((newArea.bottom == 0) && (newArea.top == 0) &&
+      (newArea.left == 0) && (newArea.right == 0))
     {
       m_ImageSource->RemoveRegionOfInterest();
     }
@@ -60,8 +60,80 @@ void mitk::USVideoDeviceCustomControls::SetCropArea(mitk::USImageVideoSource::US
   }
 }
 
-mitk::USImageVideoSource::USImageCropping mitk::USVideoDeviceCustomControls::GetCropArea()
+void mitk::USVideoDeviceCustomControls::SetNewDepth(double depth)
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  if (device.IsNotNull())
+  {
+    if( device->GetCurrentProbe().IsNotNull() )
+    {
+      device->GetCurrentProbe()->SetCurrentDepth(depth);
+      MITK_INFO << "SetCurrentDepth of currentProbe: " << depth;
+    }
+  }
+  m_Device->DepthChanged(depth);
+}
+
+void mitk::USVideoDeviceCustomControls::SetNewProbeIdentifier(std::string probename)
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  if( device.IsNotNull() )
+  {
+    device->SetCurrentProbe(probename);
+  }
+  m_Device->ProbeChanged(probename);
+}
+
+mitk::USProbe::USProbeCropping mitk::USVideoDeviceCustomControls::GetCropArea()
 {
   // just return the crop area set at the image source
-  return m_ImageSource->GetCropping();
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  if (device.IsNotNull())
+  {
+    mitk::USProbe::Pointer probe = device->GetCurrentProbe();
+    if (probe.IsNotNull())
+    {
+      return probe->GetProbeCropping();
+    }
+  }
+  mitk::USProbe::USProbeCropping defaultCropping;
+  return defaultCropping;
+}
+
+void mitk::USVideoDeviceCustomControls::UpdateProbeCropping(mitk::USImageVideoSource::USImageCropping cropping)
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  if (device.IsNotNull())
+  {
+    mitk::USProbe::Pointer probe = device->GetCurrentProbe();
+    if( probe.IsNotNull() )
+    {
+      probe->SetProbeCropping(cropping.top, cropping.bottom, cropping.left, cropping.right);
+    }
+  }
+}
+
+std::vector<mitk::USProbe::Pointer> mitk::USVideoDeviceCustomControls::GetProbes()
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  return device->GetAllProbes();
+}
+
+std::vector<int> mitk::USVideoDeviceCustomControls::GetDepthsForProbe(std::string name)
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  mitk::USProbe::Pointer probe = device->GetProbeByName(name);
+  std::map<int, mitk::Vector3D> depthsAndSpacings = probe->GetDepthsAndSpacing();
+  std::vector<int> depths;
+  for (std::map<int, mitk::Vector3D>::iterator it = depthsAndSpacings.begin(); it != depthsAndSpacings.end(); it++)
+  {
+    depths.push_back((it->first));
+  }
+  return depths;
+}
+
+void mitk::USVideoDeviceCustomControls::SetDefaultProbeAsCurrentProbe()
+{
+  mitk::USVideoDevice::Pointer device = dynamic_cast<mitk::USVideoDevice*>(m_Device.GetPointer());
+  device->SetDefaultProbeAsCurrentProbe();
 }

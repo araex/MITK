@@ -17,13 +17,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QMITKFILEOPENACTION_H_
 #define QMITKFILEOPENACTION_H_
 
-#ifdef __MINGW32__
-// We need to inlclude winbase.h here in order to declare
-// atomic intrinsics like InterlockedIncrement correctly.
-// Otherwhise, they would be declared wrong within qatomic_windows.h .
-#include <windows.h>
-#endif
-
 #include <QAction>
 #include <QIcon>
 
@@ -47,7 +40,7 @@ public:
   QmitkFileOpenAction(const QIcon & icon, berry::IWorkbenchWindow::Pointer window);
   QmitkFileOpenAction(const QIcon & icon, berry::IWorkbenchWindow* window);
 
-  ~QmitkFileOpenAction();
+  ~QmitkFileOpenAction() override;
 
 protected slots:
 

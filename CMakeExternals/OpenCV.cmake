@@ -22,18 +22,12 @@ if(MITK_USE_OpenCV)
     )
 
     if(MITK_USE_Python)
-      if(NOT MITK_USE_SYSTEM_PYTHON)
-        list(APPEND proj_DEPENDENCIES Python Numpy)
-        # export python home
-        set(ENV{PYTHONHOME} "${Python_DIR}")
-        set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${MITK_PYTHON_SITE_DIR})
-      else()
-        set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${ep_prefix}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
-      endif()
+      set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${ep_prefix}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
 
       list(APPEND additional_cmake_args
          -DBUILD_opencv_python:BOOL=ON
-         -DBUILD_NEW_PYTHON_SUPPORT:BOOL=ON
+         -DBUILD_opencv_python3:BOOL=ON
+         #-DBUILD_NEW_PYTHON_SUPPORT:BOOL=ON
          -DPYTHON_DEBUG_LIBRARY:FILEPATH=${PYTHON_DEBUG_LIBRARY}
          -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
          -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
@@ -46,13 +40,15 @@ if(MITK_USE_OpenCV)
     else()
       list(APPEND additional_cmake_args
          -DBUILD_opencv_python:BOOL=OFF
-         -DBUILD_NEW_PYTHON_SUPPORT:BOOL=OFF
+         -DBUILD_opencv_python3:BOOL=OFF
+         -DBUILD_opencv_python_bindings_generator:BOOL=OFF
+         #-DBUILD_NEW_PYTHON_SUPPORT:BOOL=OFF
           )
     endif()
 
     # 12-05-02, muellerm, added QT usage by OpenCV if QT is used in MITK
     # 12-09-11, muellerm, removed automatic usage again, since this will struggle with the MITK Qt application object
-    if(MITK_USE_QT)
+    if(MITK_USE_Qt5)
       list(APPEND additional_cmake_args
            -DWITH_QT:BOOL=OFF
            -DWITH_QT_OPENGL:BOOL=OFF
@@ -66,15 +62,12 @@ if(MITK_USE_OpenCV)
       )
     endif()
 
-    set(opencv_url ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/OpenCV-2.4.11.tar.gz)
-    set(opencv_url_md5 54fe3dba49ea276ec0228f8819e653bc)
-
+    set(opencv_url ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/opencv-3.4.1.tar.gz)
+    set(opencv_url_md5 a0b7a47899e67b3490ea31edc4f6e8e6)
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
       URL ${opencv_url}
       URL_MD5 ${opencv_url_md5}
-      # Related bug: http://bugs.mitk.org/show_bug.cgi?id=5912
-      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11.patch
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${ep_common_args}
@@ -83,6 +76,10 @@ if(MITK_USE_OpenCV)
         -DBUILD_EXAMPLES:BOOL=OFF
         -DBUILD_DOXYGEN_DOCS:BOOL=OFF
         -DWITH_CUDA:BOOL=OFF
+        -DWITH_VTK:BOOL=OFF
+        -DENABLE_CXX11:BOOL=ON
+        -DWITH_IPP:BOOL=OFF
+        -DBUILD_IPP_IW:BOOL=OFF
         ${additional_cmake_args}
       CMAKE_CACHE_ARGS
         ${ep_common_cache_args}

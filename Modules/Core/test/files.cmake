@@ -59,6 +59,10 @@ set(MODULE_TESTS
   mitkProgressBarTest.cpp
   mitkPropertyTest.cpp
   mitkPropertyListTest.cpp
+  mitkPropertyPersistenceTest.cpp
+  mitkPropertyPersistenceInfoTest.cpp
+  mitkPropertyRelationRuleBaseTest.cpp
+  mitkPropertyRelationsTest.cpp
   mitkSlicedGeometry3DTest.cpp
   mitkSliceNavigationControllerTest.cpp
   mitkSurfaceTest.cpp
@@ -73,8 +77,11 @@ set(MODULE_TESTS
   mitkTransferFunctionTest.cpp
   mitkStepperTest.cpp
   mitkRenderingManagerTest.cpp
+  mitkCompositePixelValueToStringTest.cpp
   vtkMitkThickSlicesFilterTest.cpp
   mitkNodePredicateSourceTest.cpp
+  mitkNodePredicateDataPropertyTest.cpp
+  mitkNodePredicateFunctionTest.cpp
   mitkVectorTest.cpp
   mitkClippedSurfaceBoundsCalculatorTest.cpp
   mitkExceptionTest.cpp
@@ -83,13 +90,13 @@ set(MODULE_TESTS
   mitkImageDimensionConverterTest.cpp
   mitkLoggingAdapterTest.cpp
   mitkUIDGeneratorTest.cpp
-  mitkShaderRepositoryTest.cpp
   mitkPlanePositionManagerTest.cpp
   mitkAffineTransformBaseTest.cpp
   mitkPropertyAliasesTest.cpp
   mitkPropertyDescriptionsTest.cpp
   mitkPropertyExtensionsTest.cpp
   mitkPropertyFiltersTest.cpp
+  mitkPropertyKeyPathTest.cpp
   mitkTinyXMLTest.cpp
   mitkRawImageFileReaderTest.cpp
   mitkInteractionEventTest.cpp
@@ -109,6 +116,11 @@ set(MODULE_TESTS
   mitkRotatedSlice4DTest.cpp
   mitkLevelWindowManagerCppUnitTest.cpp
   mitkVectorPropertyTest.cpp
+  mitkTemporoSpatialStringPropertyTest.cpp
+  mitkPropertyNameHelperTest.cpp
+  mitkNodePredicateGeometryTest.cpp
+  mitkPreferenceListReaderOptionsFunctorTest.cpp
+  mitkGenericIDRelationRuleTest.cpp
 )
 
 if(MITK_ENABLE_RENDERING_TESTING)
@@ -148,8 +160,6 @@ set(MODULE_TESTSURFACE
 
 set(MODULE_CUSTOM_TESTS
     mitkDataStorageTest.cpp
-    mitkDicomSeriesReaderTest.cpp
-    mitkDICOMLocaleTest.cpp
     mitkDataNodeTest.cpp
     mitkEventConfigTest.cpp
     mitkPointSetLocaleTest.cpp
@@ -164,7 +174,6 @@ set(MODULE_CUSTOM_TESTS
     mitkImageVtkMapper2DOpacityTransferFunctionTest.cpp
     mitkImageVtkMapper2DLookupTableTest.cpp
     mitkSurfaceVtkMapper3DTest
-    mitkSurfaceVtkMapper3DTexturedSphereTest.cpp
     mitkVolumeCalculatorTest.cpp
     mitkLevelWindowManagerTest.cpp
     mitkPointSetVtkMapper2DTest.cpp
@@ -175,7 +184,6 @@ set(MODULE_CUSTOM_TESTS
     mitkMultiComponentImageDataComparisonFilterTest.cpp
     mitkImageToItkTest.cpp
     mitkImageSliceSelectorTest.cpp
-    mitkSurfaceDepthPeelingTest.cpp
 )
 
 # Currently not working on windows because of a rendering timing issue

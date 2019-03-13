@@ -159,7 +159,9 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_APP_NAME}.ini")
                  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${_APP_NAME}.ini)
 endif()
 
-# Create batch files for Windows platforms
+# Create batch and VS user files for Windows platforms
+include(mitkFunctionCreateWindowsBatchScript)
+
 if(WIN32)
   set(template_name "start${_APP_NAME}.bat.in")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${template_name}")
@@ -169,6 +171,9 @@ if(WIN32)
         ${BUILD_TYPE})
     endforeach()
   endif()
+  mitkFunctionConfigureVisualStudioUserProjectFile(
+    NAME ${_APP_NAME}
+  )
 endif(WIN32)
 
 # -----------------------------------------------------------------------

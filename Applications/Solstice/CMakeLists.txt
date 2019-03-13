@@ -42,7 +42,7 @@ configure_file(src/application/solstice.ini
 add_executable(${OSGI_UI_APP} MACOSX_BUNDLE "src/application/berryMainUI.cpp")
 
 target_link_libraries(${OSGI_UI_APP} PRIVATE ${PROJECT_NAME} mbilog)
-if(MITK_USE_QT)
+if(MITK_USE_Qt5)
   target_link_libraries(${OSGI_UI_APP} PRIVATE Qt5::Widgets)
 endif()
 
@@ -60,7 +60,7 @@ if(TARGET ${CMAKE_PROJECT_NAME}-autoload)
   add_dependencies(MitkWorkbench ${CMAKE_PROJECT_NAME}-autoload)
 endif()
 
-#Setting application icon for mac os x systems
+#Setting application icon for macOS systems
 set_target_properties(MitkWorkbench PROPERTIES MACOSX_BUNDLE_ICON_FILE "icon.icns")
 
 if(APPLE)

@@ -20,7 +20,7 @@ set(UI_FILES
 
 set(CACHED_RESOURCE_FILES
   plugin.xml
-  resources/StdMultiWidgetEditor.png
+  resources/StdMultiWidgetEditor.svg
 )
 
 set(QRC_FILES

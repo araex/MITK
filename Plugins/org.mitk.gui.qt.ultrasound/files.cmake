@@ -4,16 +4,16 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   org_mitk_gui_qt_ultrasound_Activator.cpp
-  UltrasoundSupport.cpp
+  QmitkUltrasoundSupport.cpp
 )
 
 set(UI_FILES
-  src/internal/UltrasoundSupportControls.ui
+  src/internal/QmitkUltrasoundSupportControls.ui
 )
 
 set(MOC_H_FILES
   src/internal/org_mitk_gui_qt_ultrasound_Activator.h
-  src/internal/UltrasoundSupport.h
+  src/internal/QmitkUltrasoundSupport.h
 )
 
 # list of resource files which can be used by the plug-in
@@ -21,7 +21,7 @@ set(MOC_H_FILES
 # for example the icon used in the menu and tabs for the
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
-  resources/icon.xpm
+  resources/icon_ultrasound.svg
   plugin.xml
 )
 

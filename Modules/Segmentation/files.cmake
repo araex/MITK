@@ -63,6 +63,7 @@ set(CPP_FILES
   Interactions/mitkToolCommand.cpp
   Interactions/mitkWatershedTool.cpp
   Interactions/mitkPickingTool.cpp
+  Interactions/mitkSegmentationInteractor.cpp #SO
   #IO/mitkContourModelIOFactory.cpp
   #IO/mitkContourModelReader.cpp
   #IO/mitkContourModelWriter.cpp
@@ -76,6 +77,9 @@ set(CPP_FILES
   Rendering/mitkContourVtkMapper3D.cpp
   SegmentationUtilities/BooleanOperations/mitkBooleanOperation.cpp
   SegmentationUtilities/MorphologicalOperations/mitkMorphologicalOperations.cpp
+#Added from ML
+  Controllers/mitkSliceBasedInterpolationController.cpp
+  Algorithms/mitkSurfaceStampImageFilter.cpp
 )
 
 set(RESOURCE_FILES
@@ -108,6 +112,7 @@ set(RESOURCE_FILES
 
   Interactions/dummy.xml
   Interactions/LiveWireTool.xml
+  Interactions/FastMarchingTool.xml
   Interactions/PressMoveRelease.xml
   Interactions/PressMoveReleaseAndPointSetting.xml
   Interactions/PressMoveReleaseWithCTRLInversion.xml

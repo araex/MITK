@@ -106,10 +106,8 @@ paths accordingly.
       Your Visual Studio should appear and by pressing F7 you start the compilation.
       This will clone the MITK source code, build it, and then start building your own
       project.
- <li> After the superbuild compilation has finished, close the solution file and start
-      the batch file "D:\AwesomeProject-superbuild\AwesomeProject-build\StartVS_debug.bat"
-      (or _release.bat if you built in Release mode) which opens the
-      "D:\AwesomeProject-superbuild\AweseomeProject-build\AwesomeProject.sln" solution.
+ <li> After the superbuild compilation has finished, close the superbuild solution file and start
+      the build solution file "D:\AwesomeProject-superbuild\AwesomeProject-build\AwesomeProject.sln"
  <li> Set the "AwesomeApp" project as start-up project (right click > "Set as StartUp
       Project") and press "F5" to start your MITK AwesomeApp.
 </ol>
@@ -177,13 +175,12 @@ control the MITK configuration:
 
 <ul>
  <li> \b MITK_USE_BLUEBERRY Enable the use of the BlueBerry application framework
- <li> \b MITK_USE_Boost Download and use Boost in MITK
  <li> \b MITK_USE_CTK Download, compile, and use CTK in MITK
  <li> \b MITK_USE_DCMTK Download, compile, and use DCMTK in MITK
  <li> \b MITK_USE_OpenCV Download, compile, and use OpenCV in MITK
  <li> \b MITK_USE_Python Download and compile 1CableSwig and enable Python
       wrapping in ITK, VTK, OpenCV, and MITK
- <li> \b MITK_USE_QT Use the Qt framework in MITK
+ <li> \b MITK_USE_Qt5 Use the Qt 5 framework in MITK
 </ul>
 
 You can also inject already build third-party libraries from inside your project's

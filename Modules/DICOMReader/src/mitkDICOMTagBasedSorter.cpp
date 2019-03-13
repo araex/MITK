@@ -90,8 +90,8 @@ mitk::DICOMTagBasedSorter::CutDecimalPlaces
 mitk::DICOMTagBasedSorter
 ::DICOMTagBasedSorter()
 :DICOMDatasetSorter()
-,m_StrictSorting(false)
-,m_ExpectDistanceOne(false)
+,m_StrictSorting(m_DefaultStrictSorting)
+,m_ExpectDistanceOne(m_DefaultExpectDistanceOne)
 {
 }
 
@@ -148,7 +148,7 @@ bool
 mitk::DICOMTagBasedSorter
 ::operator==(const DICOMDatasetSorter& other) const
 {
-  if (const DICOMTagBasedSorter* otherSelf = dynamic_cast<const DICOMTagBasedSorter*>(&other))
+  if (const auto* otherSelf = dynamic_cast<const DICOMTagBasedSorter*>(&other))
   {
     if (this->m_StrictSorting != otherSelf->m_StrictSorting) return false;
     if (this->m_ExpectDistanceOne != otherSelf->m_ExpectDistanceOne) return false;
@@ -246,8 +246,11 @@ mitk::DICOMTagBasedSorter
 {
   DICOMTagList allTags = m_DistinguishingTags;
 
-  const DICOMTagList sortingRelevantTags = m_SortCriterion->GetAllTagsOfInterest();
-  allTags.insert( allTags.end(), sortingRelevantTags.cbegin(), sortingRelevantTags.cend() ); // append
+  if (m_SortCriterion.IsNotNull())
+  {
+    const DICOMTagList sortingRelevantTags = m_SortCriterion->GetAllTagsOfInterest();
+    allTags.insert( allTags.end(), sortingRelevantTags.cbegin(), sortingRelevantTags.cend() ); // append
+  }
 
   return allTags;
 }
@@ -329,15 +332,15 @@ mitk::DICOMTagBasedSorter
        ++tagIter)
   {
     groupID << tagIter->GetGroup() << tagIter->GetElement(); // make group/element part of the id to cover empty tags
-    const std::string rawTagValue = dataset->GetTagValueAsString(*tagIter);
+    DICOMDatasetFinding rawTagValue = dataset->GetTagValueAsString(*tagIter);
     std::string processedTagValue;
-    if ( m_TagValueProcessor[*tagIter] != nullptr )
+    if ( m_TagValueProcessor[*tagIter] != nullptr && rawTagValue.isValid)
     {
-      processedTagValue = (*m_TagValueProcessor[*tagIter])(rawTagValue);
+      processedTagValue = (*m_TagValueProcessor[*tagIter])(rawTagValue.value);
     }
     else
     {
-      processedTagValue = rawTagValue;
+      processedTagValue = rawTagValue.value;
     }
     groupID << processedTagValue;
   }

@@ -20,10 +20,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 const char* mitk::USImageSource::IMAGE_PROPERTY_IDENTIFIER = "id_nummer";
 
 mitk::USImageSource::USImageSource()
-: m_OpenCVToMitkFilter(mitk::OpenCVToMitkImageFilter::New()),
+  : m_OpenCVToMitkFilter(mitk::OpenCVToMitkImageFilter::New()),
   m_MitkToOpenCVFilter(nullptr),
   m_ImageFilter(mitk::BasicCombinationOpenCVImageFilter::New()),
-  m_CurrentImageId(0)
+  m_CurrentImageId(0),
+  m_ImageFilterMutex(itk::FastMutexLock::New())
 {
 }
 
@@ -46,68 +47,80 @@ bool mitk::USImageSource::GetIsFilterInThePipeline(AbstractOpenCVImageFilter::Po
   return m_ImageFilter->GetIsFilterOnTheList(filter);
 }
 
-mitk::Image::Pointer mitk::USImageSource::GetNextImage()
+std::vector<mitk::Image::Pointer> mitk::USImageSource::GetNextImage()
 {
-  mitk::Image::Pointer result;
+  std::vector<mitk::Image::Pointer> result;
 
-  if ( m_ImageFilter.IsNotNull() && ! m_ImageFilter->GetIsEmpty() )
+  // Apply OpenCV based filters beforehand
+  if (m_ImageFilter.IsNotNull() && !m_ImageFilter->GetIsEmpty())
   {
-    cv::Mat image;
-    this->GetNextRawImage(image);
+    std::vector<cv::Mat> imageVector;
+    GetNextRawImage(imageVector);
+    if(result.size() != imageVector.size())
+      result.resize(imageVector.size());
 
-    if ( ! image.empty() )
+    for (size_t i = 0; i < imageVector.size(); ++i)
     {
-      // execute filter if a filter is specified
-      if ( m_ImageFilter.IsNotNull() ) { m_ImageFilter->FilterImage(image, m_CurrentImageId); }
+      if (!imageVector[i].empty())
+      {
+        m_ImageFilterMutex->Lock();
+        m_ImageFilter->FilterImage(imageVector[i], m_CurrentImageId);
+        m_ImageFilterMutex->Unlock();
 
-      // convert to MITK image
-      this->m_OpenCVToMitkFilter->SetOpenCVMat(image);
-      this->m_OpenCVToMitkFilter->Update();
+        // convert to MITK image
+        this->m_OpenCVToMitkFilter->SetOpenCVMat(imageVector[i]);
+        this->m_OpenCVToMitkFilter->Update();
 
-      // OpenCVToMitkImageFilter returns a standard mitk::image.
-      result = this->m_OpenCVToMitkFilter->GetOutput();
+        // OpenCVToMitkImageFilter returns a standard mitk::image.
+        result[i] = this->m_OpenCVToMitkFilter->GetOutput();
+      }
     }
   }
   else
   {
-    // mitk image can be received direclty if no filtering is necessary
     this->GetNextRawImage(result);
   }
 
-  if ( result.IsNotNull() )
+  for (size_t i = 0; i < result.size(); ++i)
   {
-    result->SetProperty(IMAGE_PROPERTY_IDENTIFIER, mitk::IntProperty::New(m_CurrentImageId));
-    m_CurrentImageId++;
+    if (result[i].IsNotNull())
+    {
+      result[i]->SetProperty(IMAGE_PROPERTY_IDENTIFIER, mitk::IntProperty::New(m_CurrentImageId));
+    }
+    else
+    {
+      //MITK_WARN("mitkUSImageSource") << "Result image " << i << " is not set.";
+      result[i] = mitk::Image::New();
+    }
+  }
+  m_CurrentImageId++;
 
-    // Everything as expected, return result
-    return result;
-  }
-  else
-  {
-    //MITK_WARN("mitkUSImageSource") << "Result image is not set.";
-    return mitk::Image::New();
-  }
+  return result;
 }
 
-void mitk::USImageSource::GetNextRawImage( cv::Mat& image )
+void mitk::USImageSource::GetNextRawImage(std::vector<cv::Mat>& imageVector)
 {
   // create filter object if it does not exist yet
-  if ( ! m_MitkToOpenCVFilter )
+  if (!m_MitkToOpenCVFilter)
   {
     m_MitkToOpenCVFilter = mitk::ImageToOpenCVImageFilter::New();
   }
 
   // get mitk image through virtual method of the subclass
-  mitk::Image::Pointer mitkImg;
+  std::vector<mitk::Image::Pointer> mitkImg;
   this->GetNextRawImage(mitkImg);
 
-  if ( mitkImg.IsNull() || ! mitkImg->IsInitialized() )
+  for (unsigned int i = 0; i < mitkImg.size(); ++i)
   {
-    image = cv::Mat();
-    return;
+    if (mitkImg[i].IsNull() || !mitkImg[i]->IsInitialized())
+    {
+      imageVector[i] = cv::Mat();
+    }
+    else
+    {
+      // convert mitk::Image to an OpenCV image
+      m_MitkToOpenCVFilter->SetImage(mitkImg[i]);
+      imageVector[i] = m_MitkToOpenCVFilter->GetOpenCVMat();
+    }
   }
-
-  // convert mitk::Image to an OpenCV image
-  m_MitkToOpenCVFilter->SetImage(mitkImg);
-  image = m_MitkToOpenCVFilter->GetOpenCVMat();
 }

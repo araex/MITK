@@ -22,16 +22,7 @@ set(ITK_DEPENDS ${proj})
 
 if(NOT DEFINED ITK_DIR)
 
-  set(additional_cmake_args )
-  if(MINGW)
-    set(additional_cmake_args
-        -DCMAKE_USE_WIN32_THREADS:BOOL=ON
-        -DCMAKE_USE_PTHREADS:BOOL=OFF)
-  endif()
-
-  list(APPEND additional_cmake_args
-       -DUSE_WRAP_ITK:BOOL=OFF
-      )
+  set(additional_cmake_args -DUSE_WRAP_ITK:BOOL=OFF)
 
   if(MITK_USE_OpenCV)
     list(APPEND additional_cmake_args
@@ -54,29 +45,10 @@ if(NOT DEFINED ITK_DIR)
     )
   endif()
 
-  set(vcl_constexpr_patch)
-  if(GCC_VERSION VERSION_LESS 4.8 AND GCC_VERSION VERSION_GREATER 4)
-    set(vcl_constexpr_patch
-      COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/ITK-4.7.1-gcc-4.6.patch
-    )
-  endif()
-
-  # this will be in ITK 4.8, see https://issues.itk.org/jira/browse/ITK-3361
-  set(vcl_gcc5_patch)
-  if(GCC_VERSION VERSION_GREATER 4)
-    set(vcl_gcc5_patch
-      COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/ITK-4.7.1-gcc-5.patch
-    )
-  endif()
-
   ExternalProject_Add(${proj}
      LIST_SEPARATOR ${sep}
-     URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/InsightToolkit-4.7.1-20c0592.tar.gz
-     URL_MD5 f778a5f0e297c06dc629c33ec45733dc
-     # work with external GDCM
-     PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/ITK-4.7.1.patch
-                   ${vcl_constexpr_patch}
-                   ${vcl_gcc5_patch}
+     URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/InsightToolkit-4.13.1.tar.xz
+     URL_MD5 bc7296e7faccdcb5656a7669d4d875d2
      CMAKE_GENERATOR ${gen}
      CMAKE_ARGS
        ${ep_common_args}
@@ -84,6 +56,8 @@ if(NOT DEFINED ITK_DIR)
        -DBUILD_EXAMPLES:BOOL=OFF
        -DITK_USE_SYSTEM_GDCM:BOOL=ON
        -DGDCM_DIR:PATH=${GDCM_DIR}
+       -DITK_USE_SYSTEM_HDF5:BOOL=ON
+       -DHDF5_DIR:PATH=${HDF5_DIR}
      CMAKE_CACHE_ARGS
        ${ep_common_cache_args}
      CMAKE_CACHE_DEFAULT_ARGS
